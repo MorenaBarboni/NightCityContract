@@ -1,0 +1,27 @@
+{
+  "name": "nightcitycontract",
+  "version": "1.0.0",
+  "description": "Night City Smart Contract Tutorial",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MorenaBarboni/NightCityContract.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MorenaBarboni/NightCityContract/issues"
+  },
+  "homepage": "https://github.com/MorenaBarboni/NightCityContract#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "5.0.0",
+    "hardhat": "^2.22.19"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.2.0"
+  }
+}
