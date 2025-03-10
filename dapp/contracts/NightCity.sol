@@ -8,7 +8,7 @@ contract NightCity is ERC721URIStorage, Ownable {
     // **Land Structure**
     struct Land {
         uint256 id;
-        address owner;npx
+        address owner;
         uint256 price;
         bool forSale;
         address renter;

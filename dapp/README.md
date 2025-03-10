@@ -53,7 +53,9 @@ const CONTRACT_ADDRESS = "0xYOUR_DEPLOYED_CONTRACT_ADDRESS";
 ```
 
 ### **7 Start the Frontend Server**
+
 ```sh
+cd frontend
 npm start
 ```
 Your DApp should now be running on **http://localhost:3000** 🚀
