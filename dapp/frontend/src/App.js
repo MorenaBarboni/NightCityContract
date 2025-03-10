@@ -60,27 +60,27 @@ function App() {
       console.error("❌ Contract not initialized");
       return;
     }
-  
+
     try {
       console.log("✅ Fetching lands...");
       console.log("🔍 Contract Address:", contract.address);
-  
+
       const totalLands = await contract.nextTokenId(); // ✅ Ensure this function exists
       console.log("📌 Total Lands:", totalLands.toString());
-  
+
       let landList = [];
       for (let i = 0; i < totalLands; i++) {
         const land = await contract.lands(i);
         landList.push({ id: i, ...land });
       }
-      
+
       setLands(landList);
       console.log("✅ Lands fetched:", landList);
     } catch (error) {
       console.error("❌ Error fetching lands:", error);
     }
   };
-  
+
 
   const mintLand = async () => {
     if (!contract || !tokenUri || !district || !price) {
@@ -143,9 +143,9 @@ function App() {
       <div className="land-container">
         {lands.map((land) => (
           <div key={land.id} className="land-card">
-            <p>ID: {land.id}</p>
+            <p>ID: {land.id.toString()}</p> {/* Ensure ID is a string */}
             <p>Owner: {land.owner}</p>
-            <p>Price: {ethers.utils.formatEther(land.price)} ETH</p>
+            <p>Price: {ethers.utils.formatEther(land.price.toString())} ETH</p> {/* Convert BigNumber to string */}
             {land.forSale && (
               <button onClick={() => buyLand(land.id, land.price)} className="buy-button">Buy Land</button>
             )}

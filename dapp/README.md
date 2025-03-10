@@ -15,18 +15,23 @@ Ensure you have the following installed:
 
 ## 🚀 Getting Started
 
-### ** 1 Compile the Contract**
+### 1 Install Dependencies
+```sh
+npm install
+```
+
+### 2 Compile the Contract
 ```sh
 npx hardhat compile
 ```
 
-### ** 2 Start a Local Blockchain (Hardhat Node)**
+### 3 Start a Local Blockchain (Hardhat Node)
 ```sh
 npx hardhat node
 ```
 Keep this terminal open to simulate a blockchain locally.
 
-### **3 Deploy the Smart Contract**
+### 4 Deploy the Smart Contract
 In another terminal, run:
 ```sh
 npx hardhat run scripts/deploy.js --network localhost
@@ -36,12 +41,12 @@ Copy the deployed **contract address** from the output.
 ---
 ## **🌍 Frontend Setup**
 
-### **4 Navigate to the Frontend Folder**
+### 5 Navigate to the Frontend Folder
 ```sh
 cd frontend
 ```
 
-### *5 Install Frontend Dependencies**
+### 6 Install Frontend Dependencies
 ```sh
 npm install
 ```
@@ -59,6 +64,7 @@ cd frontend
 npm start
 ```
 Your DApp should now be running on **http://localhost:3000** 🚀
+(it might take a few moments)
 
 ---
 ## **💳 Connecting to Metamask**
@@ -72,6 +78,10 @@ Your DApp should now be running on **http://localhost:3000** 🚀
 
 ---
 ## **🎮 Using the DApp**
+
+### **💳 Connect your wallet**
+1. Click the button to connect your wallet
+2. Make sure to connect with the Hardhat test account.
 
 ### **🌎 Mint a New Land**
 1. Enter a **district name** and **price in ETH**.
