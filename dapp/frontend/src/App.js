@@ -14,7 +14,9 @@ function App() {
   const [district, setDistrict] = useState("");
   const [tokenUri, setTokenUri] = useState("");
   const [price, setPrice] = useState("");
-  const [showLands, setShowLands] = useState(false);
+  const [listingPrice, setListingPrice] = useState("");
+  const [listingLandId, setListingLandId] = useState("");
+  const [setShowLands] = useState(false);
 
   useEffect(() => {
     if (window.ethereum) {
@@ -97,6 +99,22 @@ function App() {
     }
   };
 
+  const listForSale = async () => {
+    if (!contract || !listingLandId || !listingPrice) {
+      alert("Enter a valid Land ID and Price to list for sale");
+      return;
+    }
+    try {
+      const priceInWei = ethers.utils.parseEther(listingPrice);
+      const tx = await contract.listForSale(listingLandId, priceInWei);
+      await tx.wait();
+      alert("Land listed for sale successfully!");
+      fetchLands();
+    } catch (error) {
+      console.error("❌ Error listing land for sale:", error);
+      alert("Failed to list land for sale.");
+    }
+  };
 
   const buyLand = async (landId, price) => {
     if (!contract) return;
@@ -127,6 +145,7 @@ function App() {
                 <p><strong>ID:</strong> {land.id.toString()}</p>
                 <p><strong>Owner:</strong> {land.owner}</p>
                 <p><strong>District:</strong> {land.district}</p>
+                <p><strong>For Sale:</strong> {land.forSale ? "Yes" : "No"}</p>
                 <p><strong>Price:</strong> {ethers.utils.formatEther(land.price.toString())} ETH</p>
               </div>
             ))
@@ -145,6 +164,22 @@ function App() {
         <button onClick={mintLand} className="mint-button">Mint Land</button>
       </div>
 
+      <div className="list-sale-container">
+        <h3>List Land for Sale</h3>
+        <input
+          type="text"
+          placeholder="Enter Land ID"
+          value={listingLandId}
+          onChange={(e) => setListingLandId(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Enter Listing Price in ETH"
+          value={listingPrice}
+          onChange={(e) => setListingPrice(e.target.value)}
+        />
+        <button onClick={listForSale} className="mint-button">List for Sale</button>
+      </div>  
     </div>
   );
 }
