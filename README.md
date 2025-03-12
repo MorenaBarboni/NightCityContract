@@ -4,13 +4,10 @@ A  **decentralized application (DApp)** for managing and trading virtual land in
 Built using **Solidity, Hardhat, React, and Ethers.js**.
 
 ## Smart Contract Template
-The Smart Contract template can be found in ```NightCityTemplate.sol```.
+The Smart Contract can be found in ```NightCity.sol```.
 - Go to https://remix.ethereum.org/
 - Create a new file ```NightCity.sol```
-- and start coding
+- Copy the content and try it out.
 
 ## DApp Template
 The complete DApp can be found in the ```dApp``` folder
-
-## Solution
-The complete code can be found in the ```solution``` branch: (```git checkout solution```)
