@@ -46,7 +46,7 @@ body {
   transform: scale(1.05);
 }
 
-.mint-container, .list-sale-container, .lands-box {
+.mint-container, .list-sale-container, .buy-land-container, .lands-box {
   background: rgba(255, 255, 255, 0.1);
   padding: 15px;
   border-radius: 10px;

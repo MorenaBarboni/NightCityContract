@@ -16,7 +16,7 @@ function App() {
   const [price, setPrice] = useState("");
   const [listingPrice, setListingPrice] = useState("");
   const [listingLandId, setListingLandId] = useState("");
-  const [setShowLands] = useState(false);
+  const [purchaseLandId, setPurchaseLandId] = useState("");
 
   useEffect(() => {
     if (window.ethereum) {
@@ -62,11 +62,12 @@ function App() {
         landList.push({ id: i, ...land });
       }
       setLands(landList);
-      setShowLands(true);
+      //setShowLands(true);
     } catch (error) {
       console.error("❌ Error fetching lands:", error);
     }
   };
+
 
   const mintLand = async () => {
     if (!contract || !tokenUri || !district || !price) {
@@ -76,11 +77,6 @@ function App() {
     }
 
     try {
-      console.log("Preparing transaction...");
-      console.log("📌 Token URI:", tokenUri);
-      console.log("📌 Price (wei):", ethers.utils.parseEther(price).toString());
-      console.log("📌 District:", district);
-
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contractWithSigner = contract.connect(signer); // ✅ Force signer usage
@@ -91,11 +87,11 @@ function App() {
 
       await tx.wait();
       console.log("✅ Transaction confirmed:", tx.hash);
-
+      alert(`✅ Land minted successfully!`);
       fetchLands();
     } catch (error) {
       console.error("❌ Error minting land:", error);
-      alert("Minting failed. Check console for details.");
+      alert("Minting failed.");
     }
   };
 
@@ -107,8 +103,13 @@ function App() {
     try {
       const priceInWei = ethers.utils.parseEther(listingPrice);
       const tx = await contract.listForSale(listingLandId, priceInWei);
+      console.log("⏳ Transaction sent:", tx);
+
       await tx.wait();
-      alert("Land listed for sale successfully!");
+
+      console.log("✅ Land listed for sale successfully!");
+      alert("✅ Land listed for sale successfully!");
+
       fetchLands();
     } catch (error) {
       console.error("❌ Error listing land for sale:", error);
@@ -116,14 +117,32 @@ function App() {
     }
   };
 
-  const buyLand = async (landId, price) => {
-    if (!contract) return;
+  const buyLand = async () => {
+    if (!contract || !purchaseLandId) return;
+
     try {
-      const tx = await contract.buyLand(landId, { value: price });
+      // Fetch the price from the contract
+      const landDetails = await contract.lands(purchaseLandId);
+      const landPrice = landDetails.price.toString(); // Price is in Wei
+
+      console.log(`Buying land ID ${purchaseLandId} for ${ethers.utils.formatEther(landPrice)} ETH`);
+
+      // Send the correct amount when purchasing
+      const tx = await contract.buyLand(purchaseLandId, {
+        value: landPrice,  // Dynamically set based on the contract
+        gasLimit: 10000000  // Adjust if needed
+      });
+      console.log("⏳ Transaction sent:", tx);
+
       await tx.wait();
       fetchLands();
+
+      console.log(`✅ Land ${purchaseLandId} purchased successfully!`);
+      alert(`✅ Land ${purchaseLandId} purchased successfully!`);
+
     } catch (error) {
-      console.error("Error buying land:", error);
+      console.error("❌ Error buying land:", error);
+      alert("❌ Error buying land:", error);
     }
   };
 
@@ -131,18 +150,32 @@ function App() {
     <div className="app-container">
       <h1>NightCity DApp</h1>
       {account ? (
-        <p>Connected: {account}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <img
+            src="/avatar.png"  // Replace with your image URL
+            alt="Avatar"
+            style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+          />
+          <p>WELCOME : {account}</p>
+        </div>
       ) : (
         <button onClick={connectWallet} className="fetch-button">Connect Wallet</button>
       )}
 
       <div className="lands-box">
-        <h3>Your Lands</h3>
+        <h3>NightCity Lands</h3>
         <div className="land-container">
           {lands.length > 0 ? (
             lands.map((land) => (
               <div key={land.id} className="land-card">
-                <p><strong>ID:</strong> {land.id.toString()}</p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <p><strong>ID:</strong> {land.id.toString()}</p>
+                  <img
+                    src="/land.png" 
+                    alt="Land Icon"
+                    style={{ width: "40px", height: "40px" }}
+                  />
+                </div>
                 <p><strong>Owner:</strong> {land.owner}</p>
                 <p><strong>District:</strong> {land.district}</p>
                 <p><strong>For Sale:</strong> {land.forSale ? "Yes" : "No"}</p>
@@ -150,7 +183,7 @@ function App() {
               </div>
             ))
           ) : (
-            <p className="no-land-placeholder">You do not own any land. Mint one below!</p>
+            <p className="no-land-placeholder">There are not Lands. Mint one below!</p>
           )}
         </div>
         <button onClick={fetchLands} className="fetch-button">Refresh</button>
@@ -179,7 +212,19 @@ function App() {
           onChange={(e) => setListingPrice(e.target.value)}
         />
         <button onClick={listForSale} className="mint-button">List for Sale</button>
-      </div>  
+      </div>
+
+      <div className="buy-land-container">
+        <h3>Buy a Land</h3>
+        <input
+          type="text"
+          placeholder="Enter Land ID"
+          value={purchaseLandId}
+          onChange={(e) => setPurchaseLandId(e.target.value)}
+        />
+        <button onClick={buyLand} className="mint-button">Buy Land</button>
+      </div>
+
     </div>
   );
 }

@@ -4,6 +4,8 @@ module.exports = {
   solidity: "0.8.20",
   networks: {
     hardhat: {
+      gas: 10000000, // High gas limit to prevent out-of-gas errors
+      gasPrice: 200, // Set a reasonable gas price
       chainId: 1337
     },
     localhost: {
