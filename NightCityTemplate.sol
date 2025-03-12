@@ -21,6 +21,7 @@ contract NightCity is ERC721URIStorage, Ownable {
 
     // **Events**
     event LandMinted(uint256 indexed tokenId, address indexed minter, string district);
+    event LandBought(uint256 indexed tokenId, address indexed buyer, uint256 price);
     event LandListedForSale(uint256 indexed tokenId, uint256 price);
     event LandRented( uint256 indexed tokenId,address indexed renter, uint256 expiration);
     event ReputationIncreased(address indexed user, uint256 newReputation);
@@ -42,6 +43,14 @@ contract NightCity is ERC721URIStorage, Ownable {
        
         emit LandListedForSale(tokenId, price);
     }
+
+    // **Buy a Land**
+
+    function buyLand(uint256 tokenId) public payable {
+       
+        emit LandBought(tokenId, msg.sender, msg.value);
+    }
+
 
     // **Rent Land**
     function rentLand(uint256 tokenId, uint256 duration) public payable {
