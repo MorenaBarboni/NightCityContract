@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import NightCityData from "./NightCity.json";
-import "./App.css";
+import "./index.css";
 
 const NightCityABI = NightCityData.abi;
 const CONTRACT_ADDRESS = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
@@ -14,16 +14,12 @@ function App() {
   const [district, setDistrict] = useState("");
   const [tokenUri, setTokenUri] = useState("");
   const [price, setPrice] = useState("");
-
+  const [showLands, setShowLands] = useState(false);
 
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", (accounts) => {
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-        } else {
-          setAccount(null);
-        }
+        setAccount(accounts.length > 0 ? accounts[0] : null);
       });
     }
   }, []);
@@ -31,12 +27,9 @@ function App() {
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
-        // Force Metamask to open the account selection popup
         await window.ethereum.request({ method: "wallet_requestPermissions", params: [{ eth_accounts: {} }] });
-
-        // Now request accounts
         const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        setAccount(accounts[0]); // Store selected account
+        setAccount(accounts[0]);
       } catch (error) {
         console.error("Error connecting to Metamask:", error);
       }
@@ -54,33 +47,24 @@ function App() {
     }
   }, [account]);
 
-
   const fetchLands = async () => {
     if (!contract) {
       console.error("❌ Contract not initialized");
       return;
     }
-
     try {
-      console.log("✅ Fetching lands...");
-      console.log("🔍 Contract Address:", contract.address);
-
-      const totalLands = await contract.nextTokenId(); // ✅ Ensure this function exists
-      console.log("📌 Total Lands:", totalLands.toString());
-
+      const totalLands = await contract.nextTokenId();
       let landList = [];
       for (let i = 0; i < totalLands; i++) {
         const land = await contract.lands(i);
         landList.push({ id: i, ...land });
       }
-
       setLands(landList);
-      console.log("✅ Lands fetched:", landList);
+      setShowLands(true);
     } catch (error) {
       console.error("❌ Error fetching lands:", error);
     }
   };
-
 
   const mintLand = async () => {
     if (!contract || !tokenUri || !district || !price) {
@@ -90,7 +74,7 @@ function App() {
     }
 
     try {
-      console.log("✅ Preparing transaction...");
+      console.log("Preparing transaction...");
       console.log("📌 Token URI:", tokenUri);
       console.log("📌 Price (wei):", ethers.utils.parseEther(price).toString());
       console.log("📌 District:", district);
@@ -124,6 +108,7 @@ function App() {
       console.error("Error buying land:", error);
     }
   };
+
   return (
     <div className="app-container">
       <h1>NightCity DApp</h1>
@@ -132,7 +117,26 @@ function App() {
       ) : (
         <button onClick={connectWallet} className="fetch-button">Connect Wallet</button>
       )}
-      <button className="fetch-button" onClick={fetchLands}>Load Lands</button>
+
+      <div className="lands-box">
+        <h3>Your Lands</h3>
+        <div className="land-container">
+          {lands.length > 0 ? (
+            lands.map((land) => (
+              <div key={land.id} className="land-card">
+                <p><strong>ID:</strong> {land.id.toString()}</p>
+                <p><strong>Owner:</strong> {land.owner}</p>
+                <p><strong>District:</strong> {land.district}</p>
+                <p><strong>Price:</strong> {ethers.utils.formatEther(land.price.toString())} ETH</p>
+              </div>
+            ))
+          ) : (
+            <p className="no-land-placeholder">You do not own any land. Mint one below!</p>
+          )}
+        </div>
+        <button onClick={fetchLands} className="fetch-button">Refresh</button>
+      </div>
+
       <div className="mint-container">
         <h3>Mint New Land</h3>
         <input type="text" placeholder="TokenURI" value={tokenUri} onChange={(e) => setTokenUri(e.target.value)} />
@@ -140,21 +144,9 @@ function App() {
         <input type="text" placeholder="Price in ETH" value={price} onChange={(e) => setPrice(e.target.value)} />
         <button onClick={mintLand} className="mint-button">Mint Land</button>
       </div>
-      <div className="land-container">
-        {lands.map((land) => (
-          <div key={land.id} className="land-card">
-            <p>ID: {land.id.toString()}</p> {/* Ensure ID is a string */}
-            <p>Owner: {land.owner}</p>
-            <p>Price: {ethers.utils.formatEther(land.price.toString())} ETH</p> {/* Convert BigNumber to string */}
-            {land.forSale && (
-              <button onClick={() => buyLand(land.id, land.price)} className="buy-button">Buy Land</button>
-            )}
-          </div>
-        ))}
-      </div>
+
     </div>
   );
 }
-
 
 export default App;
