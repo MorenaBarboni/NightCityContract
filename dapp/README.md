@@ -2,10 +2,10 @@
 
 A **decentralized application (DApp)** for managing and trading virtual land in **NightCity**. Built using **Solidity, Hardhat, React, and Ethers.js**, this DApp allows users to:
 
-✅ **Mint new lands** with a district and price.
-✅ **Buy lands** from other users.
-✅ **Connect Metamask** and interact with smart contracts.
-✅ **View available lands** on the marketplace.
+- ✅ **Mint new lands** with a district and price.
+- ✅ **Buy lands** from other users.
+- ✅ **Connect Metamask** and interact with smart contracts.
+- ✅ **View available lands** on the marketplace.
 
 ## 📌 Prerequisites
 
