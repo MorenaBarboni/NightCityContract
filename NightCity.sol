@@ -38,6 +38,7 @@ contract NightCity is ERC721URIStorage, Ownable {
     // **Events**
     event LandMinted(uint256 indexed tokenId, address indexed minter, string district);
     event LandListedForSale(uint256 indexed tokenId, uint256 price);
+    event LandBought(uint256 indexed tokenId, address indexed buyer, uint256 price);
     event LandRented( uint256 indexed tokenId,address indexed renter, uint256 expiration);
     event ReputationIncreased(address indexed user, uint256 newReputation);
     event ProposalCreated(uint256 indexed proposalId, string description, uint256 expirationTime);
@@ -82,6 +83,25 @@ contract NightCity is ERC721URIStorage, Ownable {
         increaseReputation(msg.sender, 5); // Reward for engaging in the metaverse
 
         emit LandRented(tokenId, msg.sender, lands[tokenId].rentExpiration);
+    }
+
+
+    // **Buy Land**
+    function buyLand(uint256 tokenId) public payable {
+        require(lands[tokenId].forSale, "Land is not for sale");
+        require(msg.value >= lands[tokenId].price, "Insufficient funds");
+
+        address seller = lands[tokenId].owner;
+        require(seller != msg.sender, "Cannot buy your own land");
+
+        lands[tokenId].forSale = false;
+        lands[tokenId].owner = msg.sender;
+        _transfer(seller, msg.sender, tokenId);
+
+        payable(seller).transfer(msg.value);
+        increaseReputation(msg.sender, 10);
+
+        emit LandBought(tokenId, msg.sender, msg.value);
     }
 
     // **Increase Reputation**
