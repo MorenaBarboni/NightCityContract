@@ -40,16 +40,16 @@ function App() {
       try {
         // Requests permission from the user to access their Ethereum accounts.
         // MetaMask displays a pop-up, asking the user to approve access.        
-        await window.ethereum.request({ method: "wallet_requestPermissions", params: [{ eth_accounts: {} }] });
+        // await ...
 
         // This method prompts the user to connect their MetaMask account if they haven't already.
         // Returns an array of Ethereum addresses associated with the wallet.
         // The first address in the array (accounts[0]) is usually the default account.
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+        // const accounts ...
 
         //Updates the React state with the connected Ethereum address
         // The frontend needs to display the wallet address.
-        setAccount(accounts[0]);
+        // setAccount(...).
       } catch (error) {
         console.error("Error connecting to Metamask:", error);
       }
@@ -70,20 +70,20 @@ function App() {
 
       //Creates a provider to interact and read from the Ethereum blockchain
       //The provider connects the frontend to the blockchain, allowing smart contract calls.
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      // const provider = ...
 
       //provider.getSigner() retrieves the connected user's Ethereum account.
       // A signer is required to send transactions from the user’s wallet.
-      const signer = provider.getSigner();
+      // const signer = ...
 
       //Creates a connection to the smart contract. Uses: 
       // CONTRACT_ADDRESS → The deployed smart contract's address.
       // NightCityABI → The ABI (Application Binary Interface) that defines the contract's functions.
       // signer → Allows the user to interact with the contract using their wallet.
-      const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, NightCityABI, signer);
+      // const contractInstance = ...
 
       //Set the contract state
-      setContract(contractInstance);
+      // setContract(... );
     }
   }, [account]);
 
@@ -97,17 +97,21 @@ function App() {
     }
     try {
       //Calls nextTokenId() to get the total number of lands
-      const totalLands = await contract.nextTokenId();
+      // const totalLands = ...
+
       let landList = [];
+
       //Loops through each land 
       for (let i = 0; i < totalLands; i++) {
+
         //Fetch the details of a Land from the lands mapping                                         
         const land = await contract.lands(i);
         //Store land details in a list                          
         landList.push({ id: i, ...land });
       }
+
       //Store land details in state
-      setLands(landList);
+      //setLands(...);
     }
     catch (error) {
       console.error("Error fetching lands:", error);
@@ -133,10 +137,10 @@ function App() {
 
       // Returns a new instance of the Contract, but connected to providerOrSigner.
       //By passing in a Signer. this will return a Contract which will act on behalf of that signer.
-      const contractWithSigner = contract.connect(signer); // ✅ Force signer usage
+      //const contractWithSigner = ...
 
       // A transaction request describes a transaction that is to be sent to the network or otherwise processed.
-      const tx = await contractWithSigner.mintLand(tokenUri, ethers.utils.parseEther(price), district);
+      // const tx = ...
       console.log("⏳ Transaction sent:", tx);
 
       //Resolves to the TransactionReceipt once the transaction has been included in the chain.
@@ -146,6 +150,7 @@ function App() {
 
       //Reload lands
       fetchLands();
+
     } catch (error) {
       console.error("❌ Error minting land:", error);
       alert("Minting failed.");
@@ -161,8 +166,9 @@ function App() {
       return;
     }
     try {
-      const priceInWei = ethers.utils.parseEther(listingPrice);
-      const tx = await contract.listForSale(listingLandId, priceInWei);
+       const priceInWei = ethers.utils.parseEther(listingPrice);
+      // Send transaction
+      //const tx = ...
       console.log("⏳ Transaction sent:", tx);
 
       await tx.wait();
@@ -184,17 +190,15 @@ function App() {
     if (!contract || !purchaseLandId) return;
 
     try {
-      // Fetch the price from the contract
-      const landDetails = await contract.lands(purchaseLandId);
-      const landPrice = landDetails.price.toString(); // Price is in Wei
+      // Fetch the details of the Land to be bought
+      //const landDetails =  ...
+      // Get Land price
+      //const landPrice =  ...
 
       console.log(`Buying land ID ${purchaseLandId} for ${ethers.utils.formatEther(landPrice)} ETH`);
 
       // Send the correct amount when purchasing
-      const tx = await contract.buyLand(purchaseLandId, {
-        value: landPrice,  // Dynamically set based on the contract
-        gasLimit: 10000000 // Set high gas limit for testing purposes
-      });
+      // const tx =  ...
       console.log("⏳ Transaction sent:", tx);
 
       await tx.wait();
