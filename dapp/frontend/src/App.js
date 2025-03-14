@@ -1,13 +1,17 @@
 // frontend/src/App.js
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import NightCityData from "./NightCity.json";
 import "./index.css";
 
+// Smart Contract address and ABI
+import NightCityData from "./NightCity.json";
 const NightCityABI = NightCityData.abi;
 const CONTRACT_ADDRESS = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
 
+//Main App component
 function App() {
+
+  //Application state
   const [account, setAccount] = useState(null);
   const [contract, setContract] = useState(null);
   const [lands, setLands] = useState([]);
@@ -26,11 +30,25 @@ function App() {
     }
   }, []);
 
+  /**
+   * Allows users to connect their MetaMask wallet to the DApp, 
+   * enabling interaction with the Ethereum blockchain.
+   */
   const connectWallet = async () => {
+    // A global object injected by MetaMask. If MetaMask is not installed, window.ethereum will be undefined.
     if (window.ethereum) {
       try {
+        // Requests permission from the user to access their Ethereum accounts.
+        // MetaMask displays a pop-up, asking the user to approve access.        
         await window.ethereum.request({ method: "wallet_requestPermissions", params: [{ eth_accounts: {} }] });
+
+        // This method prompts the user to connect their MetaMask account if they haven't already.
+        // Returns an array of Ethereum addresses associated with the wallet.
+        // The first address in the array (accounts[0]) is usually the default account.
         const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        //Updates the React state with the connected Ethereum address
+        // The frontend needs to display the wallet address.
         setAccount(accounts[0]);
       } catch (error) {
         console.error("Error connecting to Metamask:", error);
@@ -40,35 +58,65 @@ function App() {
     }
   };
 
+  /**
+   * Initializing the Smart Contract
+   * useEffect is a React Hook that runs side effects in functional components.
+   * It is used for handling async task and interacting with external systems (like MetaMask and smart contracts).
+   * This useEffect runs every time account changes (i.e., when the user connects a wallet).
+   */
   useEffect(() => {
+
     if (window.ethereum && account) {
+
+      //Creates a provider to interact and read from the Ethereum blockchain
+      //The provider connects the frontend to the blockchain, allowing smart contract calls.
       const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      //provider.getSigner() retrieves the connected user's Ethereum account.
+      // A signer is required to send transactions from the user’s wallet.
       const signer = provider.getSigner();
+
+      //Creates a connection to the smart contract. Uses: 
+      // CONTRACT_ADDRESS → The deployed smart contract's address.
+      // NightCityABI → The ABI (Application Binary Interface) that defines the contract's functions.
+      // signer → Allows the user to interact with the contract using their wallet.
       const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, NightCityABI, signer);
+
+      //Set the contract state
       setContract(contractInstance);
     }
   }, [account]);
 
+  /**
+  * Fetch the Land data from the Smart Contract
+  */
   const fetchLands = async () => {
     if (!contract) {
-      console.error("❌ Contract not initialized");
+      console.error("Contract not initialized");
       return;
     }
     try {
+      //Calls nextTokenId() to get the total number of lands
       const totalLands = await contract.nextTokenId();
       let landList = [];
+      //Loops through each land 
       for (let i = 0; i < totalLands; i++) {
+        //Fetch the details of a Land from the lands mapping                                         
         const land = await contract.lands(i);
+        //Store land details in a list                          
         landList.push({ id: i, ...land });
       }
+      //Store land details in state
       setLands(landList);
-      //setShowLands(true);
-    } catch (error) {
-      console.error("❌ Error fetching lands:", error);
+    }
+    catch (error) {
+      console.error("Error fetching lands:", error);
     }
   };
 
-
+  /**
+ * Mint a new Land with the smart contract
+ */
   const mintLand = async () => {
     if (!contract || !tokenUri || !district || !price) {
       console.error("❌ Missing input values:", { tokenUri, district, price });
@@ -77,17 +125,26 @@ function App() {
     }
 
     try {
+      //The provider connects the frontend to Ethereum, allowing smart contract calls.
       const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      // Connect the signer to the smart contract
       const signer = provider.getSigner();
+
+      // Returns a new instance of the Contract, but connected to providerOrSigner.
+      //By passing in a Signer. this will return a Contract which will act on behalf of that signer.
       const contractWithSigner = contract.connect(signer); // ✅ Force signer usage
 
-      // Send transaction
+      // A transaction request describes a transaction that is to be sent to the network or otherwise processed.
       const tx = await contractWithSigner.mintLand(tokenUri, ethers.utils.parseEther(price), district);
       console.log("⏳ Transaction sent:", tx);
 
+      //Resolves to the TransactionReceipt once the transaction has been included in the chain.
       await tx.wait();
       console.log("✅ Transaction confirmed:", tx.hash);
       alert(`✅ Land minted successfully!`);
+
+      //Reload lands
       fetchLands();
     } catch (error) {
       console.error("❌ Error minting land:", error);
@@ -95,6 +152,9 @@ function App() {
     }
   };
 
+  /**
+   * List an existing Land for sale
+   */
   const listForSale = async () => {
     if (!contract || !listingLandId || !listingPrice) {
       alert("Enter a valid Land ID and Price to list for sale");
@@ -117,6 +177,9 @@ function App() {
     }
   };
 
+  /**
+   * Buy a Land
+   */
   const buyLand = async () => {
     if (!contract || !purchaseLandId) return;
 
@@ -130,19 +193,19 @@ function App() {
       // Send the correct amount when purchasing
       const tx = await contract.buyLand(purchaseLandId, {
         value: landPrice,  // Dynamically set based on the contract
-        gasLimit: 10000000  // Adjust if needed
+        gasLimit: 10000000 // Set high gas limit for testing purposes
       });
       console.log("⏳ Transaction sent:", tx);
 
       await tx.wait();
       fetchLands();
 
-      console.log(`✅ Land ${purchaseLandId} purchased successfully!`);
-      alert(`✅ Land ${purchaseLandId} purchased successfully!`);
+      console.log(`Land ${purchaseLandId} purchased successfully!`);
+      alert(`Land ${purchaseLandId} purchased successfully!`);
 
     } catch (error) {
-      console.error("❌ Error buying land:", error);
-      alert("❌ Error buying land:", error);
+      console.error("Error buying land:", error);
+      alert("Error buying land:", error);
     }
   };
 
@@ -171,7 +234,7 @@ function App() {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <p><strong>ID:</strong> {land.id.toString()}</p>
                   <img
-                    src="/land.png" 
+                    src="/land.png"
                     alt="Land Icon"
                     style={{ width: "40px", height: "40px" }}
                   />
